@@ -1,28 +1,19 @@
-# Using this Template
 
-This template is primarily used for simply and easily creating React applications with LLMs. It comes pre configured with TailwindCSS and React 19.
+# Home Evaluator
 
-To use this template, simply follow these steps:
+A mobile-first web application designed to act as a companion for home buyers in Montreal, Quebec. This tool helps users track faults, structural issues, and system integrity during home tours.
 
-1. Ask an LLM to generate a React + TailwindCSS application to your specifications
-2. Create a repo from this template
-3. run the included `init.sh` script to replace placeholder text
-4. Paste the results in `App.jsx`
-5. Create a Cloudflare project and API token,
-6. Set the Cloudflare credentials as Repo Secrets (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`)
-7. Push and Commit the code
-
-You should then have a working and deployed react application on cloudflare pages.
-
----
-
-# :application_title
-
-<!-- Describe your package here -->
+Tailored specifically for the Montreal market, it includes critical checks for local concerns such as pyrite, French drains, and freeze-thaw foundation damage. The application is built to be used on-site via a mobile device, offering offline-capable local storage and easy data export.
 
 ## Features
 
--   <!-- List Features -->
+- Montreal-Specific Checklist: Includes specialized checks for Foundation cracks, French Drains, Roof (snow/ice impact), Pyrite, Vermiculite, and more.
+- Mobile-First UX: Large touch targets, collapsible sections, and a responsive design optimized for walking tours.
+- Persistent Storage: Automatically saves your progress to the device's localStorage, ensuring no data is lost during a visit.
+- Tri-State Evaluation: Mark items as Pass (✅), Fail (❌), or Check/Ask (❓).
+- Markdown Export: One-click export generates a formatted Markdown summary, perfect for pasting into Notion, Obsidian, or emails.
+- Print/PDF Mode: A clean, printer-friendly layout for generating PDF reports of a visit.
+- Metadata Tracking: Record essential details like Address, Centris Listing ID, and Legal Warranty status.
 
 ## Tech Stack
 
@@ -43,8 +34,8 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository:**
     ```sh
-    git clone git@github.com:your-username/:application_title.git
-    cd :application_title
+    git clone git@github.com:your-username/home-visit-checklist.git
+    cd home-visit-checklist
     ```
 
 2.  **Install dependencies:**
