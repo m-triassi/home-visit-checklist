@@ -24,6 +24,153 @@ export const useLocalStorage = (key, initialValue) => {
     return [storedValue, setValue];
 };
 
+export const usePropertyTabs = () => {
+    const initialProperty = {
+        id: "prop_" + Date.now(),
+        name: "Property 1",
+        metadata: {
+            address: "",
+            centrisId: "",
+            legalWarranty: "yes",
+            generalNotes: "",
+        },
+        checklistState: {},
+        expandedItems: {}
+    };
+
+    const [propertiesData, setPropertiesData] = useLocalStorage("homeTourTabs", {
+        properties: [initialProperty],
+        activePropertyId: initialProperty.id
+    });
+
+    // Legacy support for old data format
+    useEffect(() => {
+        const oldMetadata = localStorage.getItem("homeTourMetadata");
+        const oldChecklistState = localStorage.getItem("homeTourChecklistState");
+        const oldData = localStorage.getItem("homeTourData");
+
+        if (oldMetadata || oldChecklistState || oldData) {
+            try {
+                let metadata, checklistState;
+                
+                if (oldData) {
+                    const parsed = JSON.parse(oldData);
+                    metadata = parsed.metadata;
+                    checklistState = parsed.checklistState;
+                } else {
+                    metadata = oldMetadata ? JSON.parse(oldMetadata) : null;
+                    checklistState = oldChecklistState ? JSON.parse(oldChecklistState) : null;
+                }
+
+                if (metadata || checklistState) {
+                    const migratedProperty = {
+                        id: "prop_" + Date.now(),
+                        name: metadata?.address || "Property 1",
+                        metadata: metadata || initialProperty.metadata,
+                        checklistState: checklistState || {},
+                        expandedItems: {}
+                    };
+
+                    setPropertiesData({
+                        properties: [migratedProperty],
+                        activePropertyId: migratedProperty.id
+                    });
+                }
+
+                // Clear old formats
+                localStorage.removeItem("homeTourData");
+                localStorage.removeItem("homeTourMetadata");
+                localStorage.removeItem("homeTourChecklistState");
+            } catch (e) {
+                console.error("Failed to migrate old data format", e);
+            }
+        }
+    }, [setPropertiesData, initialProperty.metadata]);
+
+    const generatePropertyName = (address, propertyCount) => {
+        if (address && address.trim()) {
+            return address.trim();
+        }
+        return `Property ${propertyCount + 1}`;
+    };
+
+    const addProperty = (address = "") => {
+        const newProperty = {
+            id: "prop_" + Date.now() + Math.random(),
+            name: generatePropertyName(address, propertiesData.properties.length),
+            metadata: {
+                address: address.trim(),
+                centrisId: "",
+                legalWarranty: "yes",
+                generalNotes: "",
+            },
+            checklistState: {},
+            expandedItems: {}
+        };
+
+        setPropertiesData(prev => ({
+            properties: [...prev.properties, newProperty],
+            activePropertyId: newProperty.id
+        }));
+
+        return newProperty;
+    };
+
+    const updateProperty = (propertyId, updates) => {
+        setPropertiesData(prev => ({
+            ...prev,
+            properties: prev.properties.map(prop => 
+                prop.id === propertyId ? { ...prop, ...updates } : prop
+            )
+        }));
+    };
+
+    const deleteProperty = (propertyId) => {
+        if (propertiesData.properties.length <= 1) {
+            console.warn("Cannot delete the last property");
+            return false;
+        }
+
+        setPropertiesData(prev => {
+            const newProperties = prev.properties.filter(prop => prop.id !== propertyId);
+            const newActiveId = prev.activePropertyId === propertyId 
+                ? newProperties[0].id 
+                : prev.activePropertyId;
+
+            return {
+                properties: newProperties,
+                activePropertyId: newActiveId
+            };
+        });
+
+        return true;
+    };
+
+    const setActiveProperty = (propertyId) => {
+        setPropertiesData(prev => ({ ...prev, activePropertyId: propertyId }));
+    };
+
+    const getActiveProperty = () => {
+        return propertiesData.properties.find(prop => prop.id === propertiesData.activePropertyId) || propertiesData.properties[0];
+    };
+
+    const updateActiveProperty = (updates) => {
+        const activeId = propertiesData.activePropertyId;
+        updateProperty(activeId, updates);
+    };
+
+    return {
+        properties: propertiesData.properties,
+        activePropertyId: propertiesData.activePropertyId,
+        activeProperty: getActiveProperty(),
+        addProperty,
+        updateProperty,
+        deleteProperty,
+        setActiveProperty,
+        updateActiveProperty
+    };
+};
+
 export const useHomeTourData = () => {
     const initialMetadata = {
         address: "",
@@ -34,26 +181,6 @@ export const useHomeTourData = () => {
 
     const [metadata, setMetadata] = useLocalStorage("homeTourMetadata", initialMetadata);
     const [checklistState, setChecklistState] = useLocalStorage("homeTourChecklistState", {});
-
-    // Legacy support for old data format
-    useEffect(() => {
-        const savedData = localStorage.getItem("homeTourData");
-        if (savedData) {
-            try {
-                const parsed = JSON.parse(savedData);
-                if (parsed.metadata && !localStorage.getItem("homeTourMetadata")) {
-                    setMetadata(parsed.metadata);
-                }
-                if (parsed.checklistState && !localStorage.getItem("homeTourChecklistState")) {
-                    setChecklistState(parsed.checklistState);
-                }
-                // Clear old format
-                localStorage.removeItem("homeTourData");
-            } catch (e) {
-                console.error("Failed to migrate old data format", e);
-            }
-        }
-    }, [setMetadata, setChecklistState]);
 
     return { metadata, setMetadata, checklistState, setChecklistState };
 };
