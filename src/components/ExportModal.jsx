@@ -1,14 +1,21 @@
-import { useState } from 'react';
-import { Check, Clipboard } from 'lucide-react';
-import { Modal } from './Modal';
+import { useState } from "react";
+import { Check, Clipboard } from "lucide-react";
+import { Modal } from "./Modal";
 
-export const ExportModal = ({ isOpen, onClose, metadata, checklistState, INITIAL_SECTIONS, STATUS_OPTS }) => {
+export const ExportModal = ({
+    isOpen,
+    onClose,
+    properties,
+    INITIAL_SECTIONS,
+    STATUS_OPTS,
+}) => {
     const [isCopied, setIsCopied] = useState(false);
 
-    const generateMarkdown = () => {
+    const generatePropertyMarkdown = (property) => {
+        const { name, metadata, checklistState } = property;
         const warrantyIcon = metadata.legalWarranty === "yes" ? "✅" : "❌";
 
-        let md = `### Home Visit Checklist\n\n`;
+        let md = `### Home Visit Checklist - ${name}\n\n`;
         md += `**Address**: ${metadata.address}\n`;
         md += `**Centris Listing ID**: ${metadata.centrisId}\n`;
         md += `**Legal Warranty**: ${warrantyIcon}\n\n`;
@@ -38,6 +45,21 @@ export const ExportModal = ({ isOpen, onClose, metadata, checklistState, INITIAL
         return md;
     };
 
+    const generateMarkdown = () => {
+        if (properties.length === 0) {
+            return "### No properties to export";
+        }
+
+        return properties
+            .map((property, index) => {
+                const propertyMd = generatePropertyMarkdown(property);
+                return index < properties.length - 1
+                    ? propertyMd + "\n\n"
+                    : propertyMd;
+            })
+            .join("");
+    };
+
     const copyToClipboard = () => {
         const text = generateMarkdown();
         navigator.clipboard.writeText(text).then(() => {
@@ -47,15 +69,11 @@ export const ExportModal = ({ isOpen, onClose, metadata, checklistState, INITIAL
     };
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Export Data"
-        >
+        <Modal isOpen={isOpen} onClose={onClose} title="Export All Properties">
             <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                    Copy the text below and paste it into Notion, Obsidian,
-                    or your email.
+                    Copy the text below and paste it into Notion, Obsidian, or
+                    your email. All properties are included with separators.
                 </p>
                 <div className="relative">
                     <textarea
