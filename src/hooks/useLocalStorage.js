@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export const useLocalStorage = (key, initialValue) => {
     const [storedValue, setStoredValue] = useState(() => {
@@ -13,7 +13,8 @@ export const useLocalStorage = (key, initialValue) => {
 
     const setValue = (value) => {
         try {
-            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            const valueToStore =
+                value instanceof Function ? value(storedValue) : value;
             setStoredValue(valueToStore);
             window.localStorage.setItem(key, JSON.stringify(valueToStore));
         } catch (error) {
@@ -35,31 +36,38 @@ export const usePropertyTabs = () => {
             generalNotes: "",
         },
         checklistState: {},
-        expandedItems: {}
+        expandedItems: {},
     };
 
-    const [propertiesData, setPropertiesData] = useLocalStorage("homeTourTabs", {
-        properties: [initialProperty],
-        activePropertyId: initialProperty.id
-    });
+    const [propertiesData, setPropertiesData] = useLocalStorage(
+        "homeTourTabs",
+        {
+            properties: [initialProperty],
+            activePropertyId: initialProperty.id,
+        },
+    );
 
     // Legacy support for old data format
     useEffect(() => {
         const oldMetadata = localStorage.getItem("homeTourMetadata");
-        const oldChecklistState = localStorage.getItem("homeTourChecklistState");
+        const oldChecklistState = localStorage.getItem(
+            "homeTourChecklistState",
+        );
         const oldData = localStorage.getItem("homeTourData");
 
         if (oldMetadata || oldChecklistState || oldData) {
             try {
                 let metadata, checklistState;
-                
+
                 if (oldData) {
                     const parsed = JSON.parse(oldData);
                     metadata = parsed.metadata;
                     checklistState = parsed.checklistState;
                 } else {
                     metadata = oldMetadata ? JSON.parse(oldMetadata) : null;
-                    checklistState = oldChecklistState ? JSON.parse(oldChecklistState) : null;
+                    checklistState = oldChecklistState
+                        ? JSON.parse(oldChecklistState)
+                        : null;
                 }
 
                 if (metadata || checklistState) {
@@ -68,12 +76,12 @@ export const usePropertyTabs = () => {
                         name: metadata?.address || "Property 1",
                         metadata: metadata || initialProperty.metadata,
                         checklistState: checklistState || {},
-                        expandedItems: {}
+                        expandedItems: {},
                     };
 
                     setPropertiesData({
                         properties: [migratedProperty],
-                        activePropertyId: migratedProperty.id
+                        activePropertyId: migratedProperty.id,
                     });
                 }
 
@@ -97,7 +105,10 @@ export const usePropertyTabs = () => {
     const addProperty = (address = "") => {
         const newProperty = {
             id: "prop_" + Date.now() + Math.random(),
-            name: generatePropertyName(address, propertiesData.properties.length),
+            name: generatePropertyName(
+                address,
+                propertiesData.properties.length,
+            ),
             metadata: {
                 address: address.trim(),
                 centrisId: "",
@@ -105,23 +116,23 @@ export const usePropertyTabs = () => {
                 generalNotes: "",
             },
             checklistState: {},
-            expandedItems: {}
+            expandedItems: {},
         };
 
-        setPropertiesData(prev => ({
+        setPropertiesData((prev) => ({
             properties: [...prev.properties, newProperty],
-            activePropertyId: newProperty.id
+            activePropertyId: newProperty.id,
         }));
 
         return newProperty;
     };
 
     const updateProperty = (propertyId, updates) => {
-        setPropertiesData(prev => ({
+        setPropertiesData((prev) => ({
             ...prev,
-            properties: prev.properties.map(prop => 
-                prop.id === propertyId ? { ...prop, ...updates } : prop
-            )
+            properties: prev.properties.map((prop) =>
+                prop.id === propertyId ? { ...prop, ...updates } : prop,
+            ),
         }));
     };
 
@@ -131,15 +142,18 @@ export const usePropertyTabs = () => {
             return false;
         }
 
-        setPropertiesData(prev => {
-            const newProperties = prev.properties.filter(prop => prop.id !== propertyId);
-            const newActiveId = prev.activePropertyId === propertyId 
-                ? newProperties[0].id 
-                : prev.activePropertyId;
+        setPropertiesData((prev) => {
+            const newProperties = prev.properties.filter(
+                (prop) => prop.id !== propertyId,
+            );
+            const newActiveId =
+                prev.activePropertyId === propertyId
+                    ? newProperties[0].id
+                    : prev.activePropertyId;
 
             return {
                 properties: newProperties,
-                activePropertyId: newActiveId
+                activePropertyId: newActiveId,
             };
         });
 
@@ -147,16 +161,44 @@ export const usePropertyTabs = () => {
     };
 
     const setActiveProperty = (propertyId) => {
-        setPropertiesData(prev => ({ ...prev, activePropertyId: propertyId }));
+        setPropertiesData((prev) => ({
+            ...prev,
+            activePropertyId: propertyId,
+        }));
     };
 
     const getActiveProperty = () => {
-        return propertiesData.properties.find(prop => prop.id === propertiesData.activePropertyId) || propertiesData.properties[0];
+        return (
+            propertiesData.properties.find(
+                (prop) => prop.id === propertiesData.activePropertyId,
+            ) || propertiesData.properties[0]
+        );
     };
 
     const updateActiveProperty = (updates) => {
         const activeId = propertiesData.activePropertyId;
         updateProperty(activeId, updates);
+    };
+
+    const resetAllProperties = () => {
+        const preservedPropertyCount = Math.max(1, propertiesData.properties.length);
+        const resetProperties = Array.from({ length: preservedPropertyCount }, (_, index) => ({
+            id: "prop_" + Date.now() + "_" + index,
+            name: `Property ${index + 1}`,
+            metadata: {
+                address: "",
+                centrisId: "",
+                legalWarranty: "yes",
+                generalNotes: "",
+            },
+            checklistState: {},
+            expandedItems: {}
+        }));
+
+        setPropertiesData({
+            properties: resetProperties,
+            activePropertyId: resetProperties[0].id
+        });
     };
 
     return {
@@ -167,7 +209,8 @@ export const usePropertyTabs = () => {
         updateProperty,
         deleteProperty,
         setActiveProperty,
-        updateActiveProperty
+        updateActiveProperty,
+        resetAllProperties,
     };
 };
 
@@ -179,8 +222,14 @@ export const useHomeTourData = () => {
         generalNotes: "",
     };
 
-    const [metadata, setMetadata] = useLocalStorage("homeTourMetadata", initialMetadata);
-    const [checklistState, setChecklistState] = useLocalStorage("homeTourChecklistState", {});
+    const [metadata, setMetadata] = useLocalStorage(
+        "homeTourMetadata",
+        initialMetadata,
+    );
+    const [checklistState, setChecklistState] = useLocalStorage(
+        "homeTourChecklistState",
+        {},
+    );
 
     return { metadata, setMetadata, checklistState, setChecklistState };
 };

@@ -5,13 +5,13 @@ export const ClearModal = ({ isOpen, onClose, onClear }) => {
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Start Fresh?"
+            title="Reset All Properties?"
         >
             <div className="space-y-4">
                 <p className="text-gray-600">
-                    Are you sure you want to clear all data? This action
-                    cannot be undone. All checks and notes for the current
-                    home will be erased.
+                    Are you sure you want to reset all properties? This action
+                    cannot be undone. All checks, notes, and data for all 
+                    properties will be erased.
                 </p>
                 <div className="flex gap-3 pt-2">
                     <button
@@ -24,7 +24,7 @@ export const ClearModal = ({ isOpen, onClose, onClear }) => {
                         onClick={onClear}
                         className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-sm"
                     >
-                        Yes, Clear All
+                        Yes, Reset All
                     </button>
                 </div>
             </div>

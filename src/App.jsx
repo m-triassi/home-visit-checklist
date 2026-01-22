@@ -4,6 +4,7 @@ import { usePropertyTabs } from "./hooks/useLocalStorage";
 
 // Components
 import { Header } from "./components/Header";
+import { PropertySelector } from "./components/PropertySelector";
 import { PropertyDetails } from "./components/PropertyDetails";
 import { ChecklistSection } from "./components/ChecklistSection";
 import { GeneralNotes } from "./components/GeneralNotes";
@@ -21,7 +22,8 @@ export default function HomeTourApp() {
         addProperty,
         deleteProperty,
         setActiveProperty,
-        updateActiveProperty
+        updateActiveProperty,
+        resetAllProperties,
     } = usePropertyTabs();
 
     const [showClearModal, setShowClearModal] = useState(false);
@@ -34,14 +36,16 @@ export default function HomeTourApp() {
         updateActiveProperty({
             metadata: {
                 ...activeProperty.metadata,
-                [field]: value
-            }
+                [field]: value,
+            },
         });
 
         // Update property name if address changed and name was based on address
-        if (field === 'address' && activeProperty.name === activeProperty.metadata.address) {
+        if (field === "address" && activeProperty.name === activeProperty.metadata.address) {
             updateActiveProperty({
-                name: value.trim() || `Property ${properties.findIndex(p => p.id === activePropertyId) + 1}`
+                name:
+                    value.trim() ||
+                    `Property ${properties.findIndex((p) => p.id === activePropertyId) + 1}`,
             });
         }
     };
@@ -50,8 +54,8 @@ export default function HomeTourApp() {
         updateActiveProperty({
             checklistState: {
                 ...activeProperty.checklistState,
-                [itemId]: { ...activeProperty.checklistState[itemId], note }
-            }
+                [itemId]: { ...activeProperty.checklistState[itemId], note },
+            },
         });
     };
 
@@ -66,8 +70,8 @@ export default function HomeTourApp() {
         updateActiveProperty({
             checklistState: {
                 ...activeProperty.checklistState,
-                [itemId]: { ...activeProperty.checklistState[itemId], status: next }
-            }
+                [itemId]: { ...activeProperty.checklistState[itemId], status: next },
+            },
         });
     };
 
@@ -75,22 +79,13 @@ export default function HomeTourApp() {
         updateActiveProperty({
             expandedItems: {
                 ...activeProperty.expandedItems,
-                [itemId]: !activeProperty.expandedItems[itemId]
-            }
+                [itemId]: !activeProperty.expandedItems[itemId],
+            },
         });
     };
 
-    const clearActiveProperty = () => {
-        updateActiveProperty({
-            metadata: {
-                address: "",
-                centrisId: "",
-                legalWarranty: "yes",
-                generalNotes: "",
-            },
-            checklistState: {},
-            expandedItems: {}
-        });
+    const resetAll = () => {
+        resetAllProperties();
         setShowClearModal(false);
         window.scrollTo(0, 0);
     };
@@ -134,18 +129,22 @@ export default function HomeTourApp() {
             {/* Header */}
             <Header
                 onReset={() => setShowClearModal(true)}
-                properties={properties}
-                activePropertyId={activePropertyId}
-                onSelectProperty={setActiveProperty}
-                onDeleteProperty={handleDeleteProperty}
-                onAddProperty={() => setShowNewPropertyModal(true)}
             />
 
             <main className="max-w-3xl mx-auto p-4 space-y-6">
+                {/* Property Selector */}
+                <PropertySelector
+                    properties={properties}
+                    activePropertyId={activePropertyId}
+                    onSelectProperty={setActiveProperty}
+                    onDeleteProperty={handleDeleteProperty}
+                    onAddProperty={() => setShowNewPropertyModal(true)}
+                />
+
                 {/* Metadata Card */}
-                <PropertyDetails 
-                    metadata={activeProperty.metadata} 
-                    onMetadataChange={handleMetadataChange} 
+                <PropertyDetails
+                    metadata={activeProperty.metadata}
+                    onMetadataChange={handleMetadataChange}
                 />
 
                 {/* Checklist Sections */}
@@ -163,14 +162,16 @@ export default function HomeTourApp() {
                 ))}
 
                 {/* General Notes */}
-                <GeneralNotes 
+                <GeneralNotes
                     generalNotes={activeProperty.metadata.generalNotes}
-                    onGeneralNotesChange={(value) => handleMetadataChange("generalNotes", value)}
+                    onGeneralNotesChange={(value) =>
+                        handleMetadataChange("generalNotes", value)
+                    }
                 />
             </main>
 
             {/* Floating Action Bar */}
-            <FloatingActionBar 
+            <FloatingActionBar
                 onPrint={() => window.print()}
                 onShowExportModal={() => setShowExportModal(true)}
             />
@@ -181,7 +182,7 @@ export default function HomeTourApp() {
             <ClearModal
                 isOpen={showClearModal}
                 onClose={() => setShowClearModal(false)}
-                onClear={clearActiveProperty}
+                onClear={resetAll}
             />
 
             {/* Export Modal */}
